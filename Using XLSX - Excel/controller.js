@@ -55,4 +55,61 @@ const sendEmails = async (req, res) => {
 };
 
 
-module.exports = sendEmails;
+
+// Initialize the Excel JavaScript API
+// const Excel = require('@microsoft/office-js/excel');
+
+// Function to create and populate an Excel workbook
+const createAndPopulateExcelWorkbook = async (req, res) => {
+  try {
+    await Excel.run(async (context) => {
+      const sheetName = "DataSheet";
+      const sheet = context.workbook.worksheets.add(sheetName);
+
+      // Define sample data
+      const data = [
+        ["Name", "Age", "City"],
+        ["John", 30, "New York"],
+        ["Alice", 25, "Los Angeles"],
+        ["Bob", 35, "Chicago"],
+        ["Eve", 28, "San Francisco"]
+      ];
+
+      // Populate data into the worksheet
+      const range = sheet.getRange("A1:C5");
+      range.values = data;
+
+      // Format the header row
+      const headerRow = range.getRow(0);
+      headerRow.format.fill.color = "lightgray";
+      headerRow.format.font.bold = true;
+
+      // Save the workbook
+      await context.sync();
+      const savedExcel = await context.workbook.save();
+
+      console.log("Excel workbook created, populated, and saved successfully.");
+
+      if (!savedExcel) {
+        res.status(400).json({
+          message: "There is an Error somewhere, Please Try Again."
+        })
+      } else {
+        res.status(201).json({
+          message: "Excel workbook created, populated, and saved successfully."
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+}
+
+
+
+
+
+
+module.exports = { sendEmails, createAndPopulateExcelWorkbook };
